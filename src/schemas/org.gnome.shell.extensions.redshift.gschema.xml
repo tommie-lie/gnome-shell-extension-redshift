@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.redshift" path="/org/gnome/shell/extensions/redshift/">
+    <key name="active" type="b">
+      <default>true</default>
+      <summary>Activate redshift mode.</summary>
+      <description>Wether redshift mode should currently be active.</description>
+    </key>
+  </schema>
+</schemalist>
+
