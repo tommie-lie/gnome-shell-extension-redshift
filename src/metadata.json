@@ -1,0 +1,8 @@
+{
+"uuid": "redshift@tommie-lie.de",
+"name": "redshift",
+"description": "Integrate redshift toggle into the user menu",
+"original-author": "thomas@tommie-lie.de",
+"shell-version": [ "3.6" ],   
+"settings-schema": "org.gnome.shell.extensions.redshift"
+}
