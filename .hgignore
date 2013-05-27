@@ -1,0 +1,11 @@
+.*~$
+
+# autotools stuff
+^Makefile(\.in)?$
+^aclocal\.m4
+^autom4te.cache.*
+^config\.(log|status)$
+^configure$
+^install-sh$
+^missing$
+
