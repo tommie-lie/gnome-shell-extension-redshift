@@ -12,7 +12,12 @@ const RedshiftToggle = new Lang.Class({
     Name: "redshift",
 
     _init: function() {
+        this.parent();
         this._settings = RedshiftUtil.getSettings();
+    },
+    destroy: function() {
+        this._settings.destroy();
+        this._menuItem.destroy();
     },
     enable: function() {
         let userMenu = Main.panel.statusArea.userMenu;
@@ -24,12 +29,17 @@ const RedshiftToggle = new Lang.Class({
         this.menuItem.connect("toggled", Lang.bind(this, this._toggle));
         userMenu.menu.addMenuItem(this.menuItem, index + 1);
         
-        this._settings.connect("changed::active", Lang.bind(this, this._enabledChanged));
+        this._activeChangedID = this._settings.connect("changed::active",
+                                        Lang.bind(this, this._enabledChanged));
         // use stored value to initialize the extension
         this._enabledChanged(this._settings, "active");
     },
     disable: function() {
         this.menuItem.destroy();
+        this._settings.disconnect(this._activeChangedID);
+        if (this.pid) {
+            Util.spawnCommandLine("kill -TERM " + this.pid);
+        }
     },
     
     _toggle: function(item, state) {
@@ -37,13 +47,14 @@ const RedshiftToggle = new Lang.Class({
     },
     _enabledChanged: function (settings, key) {
         let state = settings.get_boolean(key);
-        this.menuItem.setToggleState(state);
         if (state) {
             let [success, pid] = GLib.spawn_async(null, ["redshift"], null,
                              GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
                              null, null);
-            GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, Lang.bind(this, this._redshiftTerminated), null);
+            GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid,
+                                 Lang.bind(this, this._redshiftTerminated), null);
             this.pid = pid;
+            this.menuItem.setToggleState(true);
         } else {
             if (this.pid) {
                 Util.spawnCommandLine("kill -TERM " + this.pid);
@@ -51,6 +62,8 @@ const RedshiftToggle = new Lang.Class({
                 // we don't want to spawn in this time again, so disable
                 // the switch
                 this.menuItem.setSensitive(false);
+            } else {
+                this.menuItem.setToggleState(false);
             }
         }
     },
@@ -59,6 +72,7 @@ const RedshiftToggle = new Lang.Class({
         this.pid = null;
         // reenable the switch again
         this.menuItem.setSensitive(true);
+        this.menuItem.setToggleState(false);
     }
 });
 
