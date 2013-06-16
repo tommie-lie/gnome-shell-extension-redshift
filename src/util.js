@@ -3,6 +3,12 @@ const ExtensionUtils = imports.misc.extensionUtils;
 
 const Gio = imports.gi.Gio;
 
+const REDSHIFT_LOCATION_PROVIDER_KEY = "location-provider";
+const REDSHIFT_LOCATION_LATITUDE_KEY = "location-latitude";
+const REDSHIFT_LOCATION_LONGITUDE_KEY = "location-longitude";
+const REDSHIFT_TEMPERATURE_DAYTIME_KEY = "temperature-daytime";
+const REDSHIFT_TEMPERATURE_NIGHTTIME_KEY = "temperature-nighttime";
+
 function getSettings(schema) {
     let extension = ExtensionUtils.getCurrentExtension();
 
