@@ -46,9 +46,23 @@ const RedshiftToggle = new Lang.Class({
         this._settings.set_boolean("active", state);
     },
     _enabledChanged: function (settings, key) {
-        let state = settings.get_boolean(key);
+        let state = this._settings.get_boolean(key);
         if (state) {
-            let [success, pid] = GLib.spawn_async(null, ["redshift"], null,
+            let command = ["redshift"];
+            let provider = this._settings.get_string(RedshiftUtil.REDSHIFT_LOCATION_PROVIDER_KEY);
+            if (provider == "manual") {
+                let lat = this._settings.get_double(RedshiftUtil.REDSHIFT_LOCATION_LATITUDE_KEY);
+                let lon = this._settings.get_double(RedshiftUtil.REDSHIFT_LOCATION_LONGITUDE_KEY);
+                command.push("-l " + lat + ":" + lon);
+            } else {
+                command.push("-l " + provider);
+            }
+            let tempDay = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_DAYTIME_KEY);
+            let tempNight = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_NIGHTTIME_KEY);
+            command.push("-t " + tempDay + ":" + tempNight);
+            command.push("-r");
+            
+            let [success, pid] = GLib.spawn_async(null, command, null,
                              GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
                              null, null);
             GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid,
