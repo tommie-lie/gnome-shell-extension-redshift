@@ -53,7 +53,7 @@ const RedshiftToggle = new Lang.Class({
             if (provider == "manual") {
                 let lat = this._settings.get_double(RedshiftUtil.REDSHIFT_LOCATION_LATITUDE_KEY);
                 let lon = this._settings.get_double(RedshiftUtil.REDSHIFT_LOCATION_LONGITUDE_KEY);
-                command.push("-l " + lat + ":" + lon);
+                command.push("-l " + lon + ":" + lat);
             } else {
                 command.push("-l " + provider);
             }
