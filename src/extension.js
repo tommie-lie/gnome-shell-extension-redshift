@@ -55,7 +55,7 @@ const RedshiftToggle = new Lang.Class({
                 let lon = this._settings.get_double(RedshiftUtil.REDSHIFT_LOCATION_LONGITUDE_KEY);
                 command.push("-l " + lon + ":" + lat);
             } else {
-                command.push("-l " + provider);
+                command.push("-l" + provider);
             }
             let tempDay = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_DAYTIME_KEY);
             let tempNight = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_NIGHTTIME_KEY);
