@@ -3,6 +3,6 @@
 "name": "redshift",
 "description": "Integrate redshift toggle into the user menu",
 "original-author": "thomas@tommie-lie.de",
-"shell-version": [ "3.6" ],   
+"shell-version": [ "3.6", "3.8" ],   
 "settings-schema": "org.gnome.shell.extensions.redshift"
 }
