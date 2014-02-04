@@ -1,4 +1,4 @@
-additional_files = 
+additional_files = src/redshift-prefs.ui
 
 
 uuid = @PACKAGE_NAME@
