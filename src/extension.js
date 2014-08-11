@@ -11,23 +11,23 @@ const RedshiftUtil = Me.imports.util;
 const RedshiftToggle = new Lang.Class({
     Name: "redshift",
 
-    _init: function() {
+    _init: function(statusMenu) {
         this.parent();
         this._settings = RedshiftUtil.getSettings();
+        this._statusMenu = statusMenu;
     },
     destroy: function() {
         this._settings.destroy();
         this._menuItem.destroy();
     },
     enable: function() {
-        let userMenu = Main.panel.statusArea.userMenu;
         // try to find the correct position:
         // after notifications switch
-        let index = userMenu.menu._getMenuItems().indexOf(userMenu._notificationsSwitch);
+        let index = this._statusMenu.menu._getMenuItems().indexOf(this._statusMenu._notificationsSwitch);
         
         this.menuItem = new PopupMenu.PopupSwitchMenuItem("Redshift", false);
         this.menuItem.connect("toggled", Lang.bind(this, this._toggle));
-        userMenu.menu.addMenuItem(this.menuItem, index + 1);
+        this._statusMenu.menu.addMenuItem(this.menuItem, index + 1);
         
         this._activeChangedID = this._settings.connect("changed::active",
                                         Lang.bind(this, this._enabledChanged));
@@ -92,6 +92,15 @@ const RedshiftToggle = new Lang.Class({
 
 
 function init() {
-    return new RedshiftToggle();
+    // check existence of aggregateMenu (gnome-shell 3.12)
+    if (Main.panel.statusArea.aggregateMenu) {
+        return new RedshiftToggle(Main.panel.statusArea.aggregateMenu);
+    // check existence of userMenu (gnome-shell 3.6 & 3.8)
+    } else if (Main.panel.statusArea.userMenu) {
+        return new RedshiftToggle(Main.panel.statusArea.userMenu);
+    } else {
+        global.log("redshift: unable to obtain aggregateMenu or userMenu");
+        return undefined;
+    }
 }
 
