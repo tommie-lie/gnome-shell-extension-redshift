@@ -60,7 +60,6 @@ const RedshiftToggle = new Lang.Class({
             let tempDay = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_DAYTIME_KEY);
             let tempNight = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_NIGHTTIME_KEY);
             command.push("-t " + tempDay + ":" + tempNight);
-            command.push("-r");
             
             let [success, pid] = GLib.spawn_async(null, command, null,
                              GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
