@@ -4,7 +4,7 @@
     <key name="active" type="b">
       <default>true</default>
       <summary>Activate redshift mode.</summary>
-      <description>Wether redshift mode should currently be active.</description>
+      <description>Whether redshift mode should currently be active.</description>
     </key>
     
     <key name="location-provider" type="s">
