@@ -16,7 +16,7 @@
       </choices>
       <default>"geoclue2"</default>
       <summary>Location provider.</summary>
-      <description>How redshift will find the current location. Geoclue is recommended for automatic updates via a stable internet connection but has some bugs. Manual mode allows for latitude and longitude to be set to a certain value.</description>
+      <description>How redshift will find the current location. Geoclue2 is recommended for automatic updates via a stable internet connection but has some bugs. Manual mode allows for latitude and longitude to be set to a certain value.</description>
     </key>
     <key name="location-latitude" type="d">
       <default>0.0</default>
