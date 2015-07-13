@@ -29,19 +29,19 @@ const RedshiftUtil = Me.imports.util;
 const RedshiftPrefsWidget = new Lang.Class({
     Name: 'RedshiftPrefsWidget',
     Extends: Gtk.Box,
-    
+
     _init: function() {
         this.parent();
-        
+
         this._settings = RedshiftUtil.getSettings();
         this._inhibitUpdate = true;
         this._settings.connect("changed", Lang.bind(this, this._refresh));
-        
+
         this.builder = new Gtk.Builder();
         this.builder.add_from_file(Me.dir.get_path() + "/redshift-prefs.ui");
         this.mainWidget = this.builder.get_object("mainWidget");
         this.add(this.mainWidget);
-        
+
         this.builder.get_object("cbLocationProvider").connect("changed", Lang.bind(this, this._saveComboBox, RedshiftUtil.REDSHIFT_LOCATION_PROVIDER_KEY));
         this.builder.get_object("adjLatitude").connect("value-changed", Lang.bind(this, this._saveAdjustmentDouble, RedshiftUtil.REDSHIFT_LOCATION_LATITUDE_KEY));
         this.builder.get_object("adjLongitude").connect("value-changed", Lang.bind(this, this._saveAdjustmentDouble, RedshiftUtil.REDSHIFT_LOCATION_LONGITUDE_KEY));
@@ -50,7 +50,7 @@ const RedshiftPrefsWidget = new Lang.Class({
 
         this._inhibitUpdate = false;
         this._refresh();
-        
+
         this.show_all();
     },
     _saveComboBox: function(widget, key) {
@@ -81,15 +81,15 @@ const RedshiftPrefsWidget = new Lang.Class({
     _refresh: function() {
         if (this._inhibitUpdate)
             return;
-        
+
         this._inhibitUpdate = true;
         let cbLocation = this.builder.get_object("cbLocationProvider");
         // Options have to be in the same order as in the glade file for
         // this to work properly
-        let idx = Array("geoclue", "gnome-clock", "manual").indexOf(this._settings.get_string(RedshiftUtil.REDSHIFT_LOCATION_PROVIDER_KEY));
+        let idx = Array("geoclue2", "geoclue", "gnome-clock", "manual").indexOf(this._settings.get_string(RedshiftUtil.REDSHIFT_LOCATION_PROVIDER_KEY));
         cbLocation.set_active(idx);
         this._activateLocationWidgets();
-        
+
         this.builder.get_object("adjLatitude").set_value(this._settings.get_double(RedshiftUtil.REDSHIFT_LOCATION_LATITUDE_KEY));
         this.builder.get_object("adjLongitude").set_value(this._settings.get_double(RedshiftUtil.REDSHIFT_LOCATION_LONGITUDE_KEY));
 
