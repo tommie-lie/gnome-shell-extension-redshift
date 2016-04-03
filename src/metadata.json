@@ -1,9 +1,9 @@
 {
-"uuid": "redshift@tommie-lie.de",
-"name": "redshift",
-"description": "Integrate redshift toggle into the user menu",
-"original-author": "thomas@tommie-lie.de",
-"url": "https://github.com/tommie-lie/gnome-shell-extension-redshift",
-"shell-version": [ "3.6", "3.8", "3.12", "3.14", "3.16", "3.18" ],
-"settings-schema": "org.gnome.shell.extensions.redshift"
+  "uuid": "redshift@tommie-lie.de",
+  "name": "redshift",
+  "description": "Integrate redshift toggle into the user menu",
+  "original-author": "thomas@tommie-lie.de",
+  "url": "https://github.com/tommie-lie/gnome-shell-extension-redshift",
+  "shell-version": [ "3.6", "3.8", "3.12", "3.14", "3.16", "3.18" ],
+  "settings-schema": "org.gnome.shell.extensions.redshift"
 }
