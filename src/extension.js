@@ -22,10 +22,12 @@ const Lang = imports.lang;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Util = imports.misc.util;
+const St = imports.gi.St;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const RedshiftUtil = Me.imports.util;
-
+const NeutralTemp = "6500K";
 
 const RedshiftToggle = new Lang.Class({
     Name: "redshift",
@@ -41,13 +43,28 @@ const RedshiftToggle = new Lang.Class({
     },
     enable: function() {
         // try to find the correct position:
-        // after notifications switch
-        let index = this._statusMenu.menu._getMenuItems().indexOf(this._statusMenu._notificationsSwitch);
-        
-        this.menuItem = new PopupMenu.PopupSwitchMenuItem("Redshift", false);
+        let index = 0;
+        if (this._statusMenu._notificationsSwitch) {
+            index = this._statusMenu.menu._getMenuItems().indexOf(this._statusMenu._notificationsSwitch);
+            this.menuItem = new PopupMenu.PopupSwitchMenuItem(NeutralTemp, false);
+        } else {
+            let umenu = (this._statusMenu._brightness) ? this._statusMenu._brightness.menu
+                : this._statusMenu._volume.menu;
+            index = this._statusMenu.menu._getMenuItems().indexOf(umenu) + 1;
+
+            let fileIcon = new Gio.FileIcon({
+                file: Gio.File.new_for_path(Me.path + "/lightbulb.svg")
+            });
+            let icon = new St.Icon({ style_class: 'popup-menu-icon' });
+            icon.set_gicon(fileIcon);
+
+            this.menuItem = new PopupMenu.PopupSwitchMenuItem(NeutralTemp, false);
+            this.menuItem.actor.insert_child_at_index(icon, 1);
+        }
+
         this.menuItem.connect("toggled", Lang.bind(this, this._toggle));
-        this._statusMenu.menu.addMenuItem(this.menuItem, index + 1);
-        
+        this._statusMenu.menu.addMenuItem(this.menuItem, index);
+
         this._activeChangedID = this._settings.connect("changed::active",
                                         Lang.bind(this, this._enabledChanged));
         // use stored value to initialize the extension
@@ -60,7 +77,7 @@ const RedshiftToggle = new Lang.Class({
             Util.spawnCommandLine("kill -TERM " + this.pid);
         }
     },
-    
+
     _toggle: function(item, state) {
         this._settings.set_boolean("active", state);
     },
@@ -79,13 +96,13 @@ const RedshiftToggle = new Lang.Class({
             let tempDay = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_DAYTIME_KEY);
             let tempNight = this._settings.get_int(RedshiftUtil.REDSHIFT_TEMPERATURE_NIGHTTIME_KEY);
             command.push("-t " + tempDay + ":" + tempNight);
-            command.push("-r");
-            
-            let [success, pid] = GLib.spawn_async(null, command, null,
-                             GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-                             null, null);
-            GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid,
-                                 Lang.bind(this, this._redshiftTerminated), null);
+            command.push("-v");
+
+            let [success, pid, pin, pout, perr] = GLib.spawn_async_with_pipes(null, command, null,
+                                                                              GLib.SpawnFlags.SEARCH_PATH, null);
+            let channel = GLib.IOChannel.unix_new(pout);
+            GLib.io_add_watch(channel, GLib.PRIORITY_DEFAULT, GLib.IOCondition.IN | GLib.IOCondition.HUP,
+                              Lang.bind(this, this._redshiftWatch), null);
             this.pid = pid;
             this.menuItem.setToggleState(true);
         } else {
@@ -100,12 +117,28 @@ const RedshiftToggle = new Lang.Class({
             }
         }
     },
-    _redshiftTerminated: function(pid, status, user_data) {
-        GLib.spawn_close_pid(pid);
-        this.pid = null;
-        // reenable the switch again
-        this.menuItem.setSensitive(true);
-        this.menuItem.setToggleState(false);
+    _redshiftWatch: function(source, condition, user_data) {
+        if (condition == GLib.IOCondition.IN) {
+            let [status, str_raw, length, term_pos] = source.read_line();
+            // Extract the color temperature from redshift stdout
+            // (this is possible because we passed the -v option),
+            // this is ugly, but there is no other way to get this information.
+            // Note that the text before the colon depends on the locale.
+            let str = str_raw.trim();
+            let re = /^.+: [0-9]+K$/;
+            if (re.test(str)) {
+                let text = str.split(":")[1].trim();
+                this.menuItem.label.text = text;
+            }
+            return true;
+        } else {
+            this.pid = null;
+            // reenable the switch again
+            this.menuItem.setSensitive(true);
+            this.menuItem.setToggleState(false);
+            this.menuItem.label.text = NeutralTemp;
+            return false;
+        }
     }
 });
 
@@ -122,4 +155,3 @@ function init() {
         return undefined;
     }
 }
-
