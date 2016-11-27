@@ -25,7 +25,9 @@ const GLib = imports.gi.GLib;
 const Util = imports.misc.util;
 const Me = imports.misc.extensionUtils.getCurrentExtension();
 const RedshiftUtil = Me.imports.util;
-
+const Extension = imports.misc.extensionUtils.getCurrentExtension();
+const Shell = imports.gi.Shell;
+const St = imports.gi.St;
 
 const RedshiftToggle = new Lang.Class({
     Name: "redshift",
@@ -34,6 +36,7 @@ const RedshiftToggle = new Lang.Class({
         this.parent();
         this._settings = RedshiftUtil.getSettings();
         this._statusMenu = statusMenu;
+
     },
     destroy: function() {
         this._settings.destroy();
@@ -43,10 +46,32 @@ const RedshiftToggle = new Lang.Class({
         // try to find the correct position:
         // after notifications switch
         let index = this._statusMenu.menu._getMenuItems().indexOf(this._statusMenu._notificationsSwitch);
+
+	this.subMenu = new PopupMenu.PopupSubMenuMenuItem(_("RedShift"), false);
         
         this.menuItem = new PopupMenu.PopupSwitchMenuItem("Redshift", false);
         this.menuItem.connect("toggled", Lang.bind(this, this._toggle));
-        this._statusMenu.menu.addMenuItem(this.menuItem, index + 1);
+
+	this._pref = new St.Button({ child: this._get_icon("pref")});
+        this._pref.connect("clicked", function()
+            {
+                let app_sys = Shell.AppSystem.get_default();
+                let prefs = app_sys.lookup_app('gnome-shell-extension-prefs.desktop');
+                if (prefs.get_state() == prefs.SHELL_APP_STATE_RUNNING)
+                    prefs.activate();
+                else
+                    prefs.get_app_info().launch_uris(['extension:///' + Extension.metadata.uuid], null);
+            }
+        );
+
+        this.prefItem = new PopupMenu.PopupMenuItem("Prefs: ");
+	this.prefItem.actor.add_actor(this._pref);
+
+	this.subMenu.menu.addMenuItem(this.menuItem, 0);
+	this.subMenu.menu.addMenuItem(this.prefItem, 1);
+
+	this._statusMenu.menu.addMenuItem(this.subMenu, index + 1);
+	//this._statusMenu.menu.addMenuItem(this.menuItem, index + 2);
         
         this._activeChangedID = this._settings.connect("changed::active",
                                         Lang.bind(this, this._enabledChanged));
@@ -60,6 +85,24 @@ const RedshiftToggle = new Lang.Class({
             Util.spawnCommandLine("kill -TERM " + this.pid);
         }
     },
+
+    _get_icon: function(name, size)
+    {
+        if (arguments.length == 1)
+            size = 16;
+        let iconname = "";
+        switch (name) {
+            case "pref":
+                iconname = "emblem-system-symbolic";
+                break;
+        }
+
+        return new St.Icon({
+            icon_name: iconname,
+            icon_size: size,
+        });
+    },
+
     
     _toggle: function(item, state) {
         this._settings.set_boolean("active", state);
@@ -122,4 +165,3 @@ function init() {
         return undefined;
     }
 }
-
